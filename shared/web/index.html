@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NavDemo Web</title>
+<style>
+  body { font-family: -apple-system, Roboto, sans-serif; margin: 16px; color: #111; }
+  h1 { font-size: 22px; } h2 { font-size: 18px; margin-top: 24px; }
+  button, input, select { font-size: 16px; padding: 8px; margin: 4px 0; }
+  button { background: #2563eb; color: white; border: 0; border-radius: 6px; }
+  label { display: block; margin-top: 8px; }
+  #greeting, #result, #late { font-weight: 600; min-height: 20px; }
+  a { color: #2563eb; }
+</style>
+</head>
+<body>
+<h1 id="title">NavDemo Web</h1>
+<p>This page is served from the app bundle, so the WebView works offline.</p>
+
+<h2>Actions</h2>
+<button id="hello" onclick="document.getElementById('greeting').textContent='Hello from the web'">Say hello</button>
+<p id="greeting" aria-live="polite"></p>
+
+<h2>Form</h2>
+<form id="form" onsubmit="event.preventDefault(); document.getElementById('result').textContent='Sent: '+document.getElementById('name').value+', '+document.getElementById('color').value;">
+  <label for="name">Your name</label>
+  <input id="name" name="name" type="text" placeholder="Type a name" autocomplete="off">
+  <label for="color">Favourite colour</label>
+  <select id="color" name="color">
+    <option>Red</option><option>Green</option><option>Blue</option>
+  </select>
+  <br>
+  <button id="send" type="submit">Send</button>
+</form>
+<p id="result"></p>
+
+<h2>Navigation</h2>
+<p><a id="second" href="page2.html">Second page</a></p>
+
+<h2>Slow content</h2>
+<p id="late">Loading…</p>
+<script>
+  setTimeout(function () { document.getElementById('late').textContent = 'Loaded late'; }, 1500);
+</script>
+</body>
+</html>

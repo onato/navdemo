@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second page</title>
+<style>
+  body { font-family: -apple-system, Roboto, sans-serif; margin: 16px; color: #111; }
+  li { padding: 10px 0; border-bottom: 1px solid #eee; }
+  a { color: #2563eb; }
+</style>
+</head>
+<body>
+<h1 id="title">Second page</h1>
+<p><a id="back" href="index.html">Back to start</a></p>
+<ul id="list"></ul>
+<p id="bottom">You reached the bottom.</p>
+<script>
+  var ul = document.getElementById('list');
+  for (var i = 1; i <= 40; i++) { var li = document.createElement('li'); li.id = 'row-' + i; li.textContent = 'Web row ' + i; ul.appendChild(li); }
+</script>
+</body>
+</html>

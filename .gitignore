@@ -1,0 +1,13 @@
+# iOS
+ios/NavDemo.xcodeproj/
+ios/build/
+*.xcuserstate
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.kotlin/
+# misc
+.DS_Store
+build_artifacts/
