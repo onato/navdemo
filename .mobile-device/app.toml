@@ -1,0 +1,27 @@
+# mobile-device profile: how to build, install, launch and sign in to NavDemo.
+# Paths are relative to the repo root. Secrets never go here: password_ref names a file or a command.
+name = "NavDemo"
+
+[ios]
+bundle = "dev.navdemo.ios"
+build = "scripts/build-ios.sh"
+app = "ios/build/Build/Products/Debug-iphonesimulator/NavDemo.app"
+login = ".mobile-device/login.ios.nav"
+logout = ".mobile-device/logout.ios.nav"
+signed_in = "type=TabButton label=Home"
+signed_out = "id=signIn"
+
+[android]
+bundle = "dev.navdemo.android"
+build = "scripts/build-android.sh"
+app = "android/app/build/outputs/apk/debug/app-debug.apk"
+login = ".mobile-device/login.android.nav"
+logout = ".mobile-device/logout.android.nav"
+signed_in = "id=nav_home"
+signed_out = "id=signIn"
+
+[credentials]
+username = "demo"
+# The demo password is "demo"; a real app would point at a file outside the repo or a keychain command,
+# e.g. "security find-generic-password -s navdemo -w".
+password_ref = ".mobile-device/demo-password.txt"

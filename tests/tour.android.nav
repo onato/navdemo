@@ -1,0 +1,42 @@
+# NavDemo tour: assumes the app is open and signed in (see .mobile-device/login.*.nav).
+# Run: simnav --udid $U run tests/tour.ios.nav | androidnav --serial $S run tests/tour.android.nav
+tap id=nav_home
+wait id=increment
+tap id=increment
+tap id=increment
+find id=count
+tap "Item 7"
+wait id=detailTitle
+tap id=favourite
+wait id=favouriteState
+back
+wait id=nav_home
+tap id=nav_web
+wait web "Say hello" --timeout 15
+loaded
+tap web "Say hello"
+wait web "Hello from the web"
+tap web type=EditText has="Your name"
+type --field 'web "Your name"' Ada
+tap web Send
+wait web has=Sent
+tap web "Second page"
+wait web has="Second page" --timeout 10
+scroll down
+scroll down
+scroll up
+scroll up
+tap web "Back to start"
+wait web id=title
+tap id=nav_search
+tap id=searchField
+type --field id=searchField 12
+wait "Item 12"
+tap id=nav_profile
+wait id=logout
+wait id=profileName
+tap id=nav_home
+tap id=showDialog
+wait type=Button label=OK
+tap type=Button label=OK
+wait id=dialogResult

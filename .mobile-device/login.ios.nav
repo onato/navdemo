@@ -1,0 +1,7 @@
+# Sign in to NavDemo on iOS. mobile-device replaces $SECRET_FILE with a file holding the password.
+wait id=username --timeout 15
+tap id=username
+type $USERNAME
+type --field id=password --secret-file $SECRET_FILE
+tap id=signIn
+wait type=TabButton label=Home --timeout 10

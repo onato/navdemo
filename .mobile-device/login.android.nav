@@ -1,0 +1,6 @@
+# Sign in to NavDemo on Android. mobile-device replaces $SECRET_FILE with a file holding the password.
+wait id=username --timeout 15
+type --field id=username $USERNAME
+type --field id=password --secret-file $SECRET_FILE
+tap id=signIn
+wait id=nav_home --timeout 10

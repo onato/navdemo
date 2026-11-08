@@ -1,0 +1,7 @@
+# Sign out of NavDemo on Android: Profile tab, Log out, confirm in the dialog (button1 is the
+# positive button of every AlertDialog).
+tap id=nav_profile
+tap id=logout
+wait id=button1
+tap id=button1
+wait id=signIn --timeout 10

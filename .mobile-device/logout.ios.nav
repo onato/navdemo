@@ -1,0 +1,7 @@
+# Sign out of NavDemo on iOS: Profile tab, Log out, confirm in the sheet (the second "Log out"
+# button: the first is the Profile one still behind it).
+tap type=TabButton label=Profile
+tap id=logout
+wait type=Sheet has="Log out?"
+tap type=Button label="Log out" index=1
+wait id=signIn --timeout 10
