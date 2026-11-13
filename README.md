@@ -21,6 +21,7 @@ tests/smoke.sh ios            # lease a simulator, build, install, launch, sign 
 tests/smoke.sh android        # the same on an emulator
 $M --platform ios nav tests/tour.ios.nav      # just the tour, on this session's device
 $M --platform ios do tap id=searchField       # any one simnav / androidnav command
+tests/perf.py --platform ios --runs 5         # time the tour: median and p90 per step
 ```
 
 - `.mobile-device/app.toml` names the bundle ids, build commands, app paths, the signed-in /
@@ -34,3 +35,8 @@ $M --platform ios do tap id=searchField       # any one simnav / androidnav comm
   so the two tabs are the same.
 - `tests/tour.*.nav` walk every screen: counter, list → detail, favourite, back, the WebView's
   button, form, link and second page, scrolling, search, profile, dialog. About 10 s per platform.
+- `tests/perf.py` runs the tour several times on a signed-in app, relaunching it before each run,
+  and prints each step's median and p90. Its `driver` row sums the taps, typing and scrolling (the
+  driver's own cost), its `app` row the waits (mostly the app's animations and page loads). With
+  `--save-baseline` it writes `tests/perf-baseline.<platform>.json`; later runs mark rows more than
+  a fifth and 10 ms slower, and exit 1 when the driver, app or total row is.
