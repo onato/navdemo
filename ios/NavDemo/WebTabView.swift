@@ -32,6 +32,10 @@ final class WebModel: NSObject, ObservableObject, WKNavigationDelegate {
     override init() {
         let config = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: config)
+        #if DEBUG
+        // Lets Safari's Web Inspector and webinspectord clients read the page's DOM.
+        webView.isInspectable = true
+        #endif
         super.init()
         webView.navigationDelegate = self
         observation = webView.observe(\.estimatedProgress) { [weak self] wv, _ in
