@@ -17,7 +17,7 @@ loaded
 tap web "Say hello"
 wait web "Hello from the web"
 tap web type=EditText has="Your name"
-type --field 'web "Your name"' Ada
+type --field 'web id=name' Ada
 tap web Send
 wait web has=Sent
 tap web "Second page"
