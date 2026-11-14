@@ -1,8 +1,12 @@
 import SwiftUI
 import WebKit
 
+/// The Web tab's page is inspectable in Debug builds; the Plain web tab's never is, so tools can be
+/// compared on the same page read both ways, and in one app that has both kinds of WebView.
 struct WebTabView: View {
-    @StateObject private var model = WebModel()
+    @StateObject private var model: WebModel
+
+    init(inspectable: Bool) { _model = StateObject(wrappedValue: WebModel(inspectable: inspectable)) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,12 +33,12 @@ final class WebModel: NSObject, ObservableObject, WKNavigationDelegate {
     let webView: WKWebView
     private var observation: NSKeyValueObservation?
 
-    override init() {
+    init(inspectable: Bool) {
         let config = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: config)
         #if DEBUG
         // Lets Safari's Web Inspector and webinspectord clients read the page's DOM.
-        webView.isInspectable = true
+        webView.isInspectable = inspectable
         #endif
         super.init()
         webView.navigationDelegate = self

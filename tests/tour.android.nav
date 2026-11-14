@@ -28,6 +28,11 @@ scroll up
 scroll up
 tap web "Back to start"
 wait web id=title
+tap id=nav_plain_web
+wait web "Say hello" --timeout 15
+loaded
+tap web "Say hello"
+wait web "Hello from the web"
 tap id=nav_search
 tap id=searchField
 type --field id=searchField 12

@@ -28,6 +28,11 @@ scroll up
 scroll up
 tap web "Back to start"
 wait web "Say hello"
+tap type=TabButton label="Plain web"
+wait web "Say hello" --timeout 15
+loaded
+tap web "Say hello"
+wait web "Hello from the web"
 tap type=TabButton label=Search
 tap id=searchField
 type 12

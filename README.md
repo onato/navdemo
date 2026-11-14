@@ -28,5 +28,9 @@ $M --platform ios do tap id=searchField       # any one simnav / androidnav comm
 - `.mobile-device/login.*.nav` and `logout.*.nav` are the sign-in and sign-out flows, one per
   platform, as driver scripts: `$USERNAME` and `$SECRET_FILE` are filled in at run time, and the
   password only ever goes through `type --secret-file` into the password field.
+- The Web and Plain web tabs show the same pages. On iOS, Web's WebView is inspectable in Debug
+  builds and Plain web's never is, so a tool can be compared on one page read both ways, and in an
+  app with both kinds of WebView. On Android, WebView debugging is one switch for the whole app,
+  so the two tabs are the same.
 - `tests/tour.*.nav` walk every screen: counter, list → detail, favourite, back, the WebView's
   button, form, link and second page, scrolling, search, profile, dialog. About 10 s per platform.

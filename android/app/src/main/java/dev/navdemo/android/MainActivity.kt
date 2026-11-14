@@ -15,6 +15,9 @@ class MainActivity : AppCompatActivity() {
         b.bottomNav.setOnItemSelectedListener { item ->
             val (fragment, title) = when (item.itemId) {
                 R.id.nav_web -> WebFragment() to "Web"
+                // WebView debugging is one switch for the whole app on Android, so this is the Web
+                // tab again; it exists so one script drives both platforms (iOS's is not inspectable).
+                R.id.nav_plain_web -> WebFragment() to "Plain web"
                 R.id.nav_search -> SearchFragment() to "Search"
                 R.id.nav_profile -> ProfileFragment() to "Profile"
                 else -> HomeFragment() to "Home"
