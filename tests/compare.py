@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Time one scenario on NavDemo with each tool, on each kind of screen, the same way each time.
 
-    tests/compare.py --udid UDID [--runs 3] [--tools simnav,axe,maestro] [--targets native,web,plain]
+    tests/compare.py --udid UDID [--runs 3] [--tools simnav,axe,maestro,appium] [--targets native,web,plain]
                      [--out tests/results]
     tests/compare.py --platform android --serial SERIAL [--runs 3] [--tools androidnav,adb,maestro]
                      [--targets native,web,plain]
@@ -15,7 +15,10 @@ a row far below the fold on the next page.
 Each run relaunches the app and opens the target with simnav (untimed), then times every step:
 for simnav and AXe the wall time of each command, process start included, as an agent pays it;
 for Maestro the duration it records for each command, with its start-up (JVM, XCTest driver)
-reported apart. A tool that cannot do a step on a target is reported as such, not timed.
+reported apart; for Appium the wall time of its WebDriver calls, with session start and the switch
+to the page's web context reported apart. Appium's web clicks and keys are dispatched in the page
+by JavaScript, not touched, so its web reveal is a click with no scrolling. A tool that cannot do
+a step on a target is reported as such, not timed.
 
 On Android the tools are androidnav, adb (`uiautomator dump` and `input`) and Maestro, and
 `native` is Home → Native page, a twin made of Android views. WebView debugging is one switch for
@@ -26,16 +29,20 @@ before adb or Maestro runs.
 Writes <out>/compare-<time>.json (compare-android-<time>.json) and prints a Markdown table.
 """
 import argparse
+import atexit
 import datetime
 import json
 import os
 import platform
 import re
+import socket
 import statistics
 import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.request
 import xml.etree.ElementTree as ET
 
 SIMNAV = os.path.expanduser("~/.claude/skills/simnav/bin/simnav")
@@ -72,6 +79,10 @@ ANDROID_TARGETS = {
 
 class StepFailed(Exception):
     pass
+
+
+class Cannot(StepFailed):
+    """The tool cannot do the scenario on this target at all, found only once it is running."""
 
 
 # MARK: - Pure helpers (tests/test_compare.py)
@@ -118,6 +129,21 @@ def on_screen(e, bottom=TAB_BAR_TOP):
     f = e["frame"]
     cy = f["y"] + f["height"] / 2
     return 0 < cy < bottom
+
+
+def rect_on_screen(rect, bottom=TAB_BAR_TOP):
+    return on_screen({"frame": rect}, bottom)
+
+
+def element_id(value):
+    return value["element-6066-11e4-a52e-4f735466cecf"]
+
+
+def webdriver_value(reply):
+    value = reply.get("value")
+    if isinstance(value, dict) and "error" in value:
+        raise StepFailed(f"{value['error']}: {value.get('message', '')}".strip())
+    return value
 
 
 def parse_dump(xml):
@@ -445,6 +471,178 @@ class Maestro:
         return steps
 
 
+class Appium:
+    """Appium's XCUITest driver, spoken to as plain W3C WebDriver over HTTP."""
+    name = "appium"
+
+    def __init__(self, udid):
+        self.udid = udid
+        self.simnav = Simnav(udid)
+        self.server = None
+        self.base = None
+        self.session = None
+        self.startup = []
+        self.context = []
+        self.server_ms = None
+
+    @staticmethod
+    def capabilities(udid):
+        return {"capabilities": {"alwaysMatch": {
+            "platformName": "iOS", "appium:automationName": "XCUITest", "appium:udid": udid,
+            "appium:bundleId": BUNDLE, "appium:noReset": True, "appium:autoLaunch": False,
+            "appium:wdaLaunchTimeout": 600000, "appium:newCommandTimeout": 300,
+            "appium:additionalWebviewBundleIds": ["process-NavDemo"],
+        }}}
+
+    @staticmethod
+    def plan(what, arg, target):
+        web = target != "native"
+
+        def by_text(text):
+            if web:
+                return ("find", "xpath", f"//*[normalize-space(text())='{text}']")
+            return ("find", "-ios predicate string", f"label == '{text}'")
+
+        field = ("find", "css selector", "#name") if web else \
+            ("find", "-ios predicate string", "type == 'XCUIElementTypeTextField' AND label == 'Your name'")
+        if what == "read":
+            return [("source",)]
+        if what == "tap":
+            return [by_text(arg), ("click",)]
+        if what == "wait":
+            return [by_text(arg)]
+        if what == "type":
+            return [field, ("keys", arg)]
+        if what == "submit":
+            return [field, ("keys", "" if web else "\n")]
+        if what == "reveal":
+            if web:
+                return [by_text(arg), ("click",)]
+            return [by_text(arg), ("scroll to",), ("on screen",), ("click",)]
+        raise ValueError(what)
+
+    @staticmethod
+    def web_context(contexts):
+        ids = [c["id"] if isinstance(c, dict) else c for c in contexts]
+        webviews = [c for c in ids if c.startswith("WEBVIEW")]
+        if len(webviews) != 1:
+            raise Cannot(f"Appium lists {len(webviews)} web contexts: {', '.join(ids)}")
+        return webviews[0]
+
+    def call(self, method, path, body=None, timeout=120):
+        url = self.base + (f"/session/{self.session}" if self.session else "") + path
+        data = json.dumps(body if body is not None else {}).encode() if method == "POST" else None
+        req = urllib.request.Request(url, data=data, method=method, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return webdriver_value(json.load(r))
+        except urllib.error.HTTPError as e:
+            return webdriver_value(json.load(e))
+
+    def start_server(self):
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            port = s.getsockname()[1]
+        self.base = f"http://127.0.0.1:{port}"
+        t = time.perf_counter()
+        self.server = subprocess.Popen(["appium", "--address", "127.0.0.1", "--port", str(port), "--log-level", "error"],
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        atexit.register(self.server.terminate)
+        deadline = time.time() + 60
+        while time.time() < deadline:
+            try:
+                self.call("GET", "/status", timeout=2)
+                self.server_ms = (time.perf_counter() - t) * 1000
+                return
+            except (urllib.error.URLError, ConnectionError):
+                time.sleep(0.2)
+        raise StepFailed("the Appium server did not start within 60s")
+
+    def can(self, target):
+        return None
+
+    def open(self, target):
+        if not self.server:
+            self.start_server()
+        self.simnav.open(target)
+        # One Web Inspector client gets answers at a time, and simnavd holds one.
+        self.simnav("quit", check=False)
+        t = time.perf_counter()
+        self.session = None
+        self.session = self.call("POST", "/session", self.capabilities(self.udid), timeout=900)["sessionId"]
+        self.call("POST", "/timeouts", {"implicit": 10000})
+        self.startup.append((time.perf_counter() - t) * 1000)
+        if target != "native":
+            t = time.perf_counter()
+            try:
+                self.call("POST", "/context", {"name": self.web_context(self.call("GET", "/contexts"))})
+            except Cannot:
+                self.close()
+                raise
+            self.context.append((time.perf_counter() - t) * 1000)
+
+    def do(self, op):
+        kind = op[0]
+        if kind == "source":
+            self.call("GET", "/source")
+        elif kind == "find":
+            self.element = element_id(self.call("POST", "/element", {"using": op[1], "value": op[2]}))
+        elif kind == "click":
+            self.call("POST", f"/element/{self.element}/click")
+        elif kind == "keys":
+            self.call("POST", f"/element/{self.element}/value", {"text": op[1], "value": list(op[1])})
+        elif kind == "scroll to":
+            self.call("POST", "/execute/sync", {"script": "mobile: scrollToElement",
+                                                "args": [{"elementId": self.element}]})
+        elif kind == "on screen":
+            rect = self.call("GET", f"/element/{self.element}/rect")
+            if not rect_on_screen(rect):
+                raise StepFailed(f"appium: revealed at {rect}, not above the tab bar")
+
+    def close(self):
+        if self.session:
+            self.call("DELETE", "")
+            self.session = None
+        # WebDriverAgent's XCTest session can leave accessibility as Maestro does.
+        self.simnav("recover", timeout=60, check=False)
+
+    def run(self, target):
+        out = []
+        try:
+            for what, arg in SCENARIO:
+                ops = self.plan(what, arg, target)
+                t = time.perf_counter()
+                for op in ops:
+                    self.do(op)
+                out.append((time.perf_counter() - t) * 1000)
+            return out
+        finally:
+            self.close()
+
+    def hidden_page(self):
+        """Web tab, then Plain web: what Appium lists for the Web tab's now hidden page."""
+        self.simnav.open("web")
+        self.simnav("tap", "Plain web")
+        self.simnav("wait", "web", "Say hello", "--timeout", "15")
+        self.simnav("quit", check=False)
+        self.session = self.call("POST", "/session", self.capabilities(self.udid), timeout=900)["sessionId"]
+        try:
+            listed = self.call("POST", "/execute/sync", {"script": "mobile: getContexts", "args": [{}]})
+            pages = []
+            for c in listed:
+                cid = c["id"] if isinstance(c, dict) else c
+                if not cid.startswith("WEBVIEW"):
+                    continue
+                self.call("POST", "/context", {"name": cid})
+                state = self.call("POST", "/execute/sync", {"script": "return document.visibilityState", "args": []})
+                pages.append({"context": c, "visibilityState": state,
+                              "source_has_say_hello": "Say hello" in self.call("GET", "/source")})
+                self.call("POST", "/context", {"name": "NATIVE_APP"})
+            return {"contexts": listed, "pages": pages}
+        finally:
+            self.close()
+
+
 def environment(udid):
     xcode = sh(["xcodebuild", "-version"], check=False).stdout.split("\n")
     runtime = sh(["xcrun", "simctl", "list", "devices", "-j"], check=False).stdout
@@ -452,7 +650,18 @@ def environment(udid):
     return {"xcode": " ".join(x for x in xcode[:2] if x), "runtime": rt, "host": platform.mac_ver()[0],
             "load": os.getloadavg()[0], "axe": sh(["axe", "--version"], check=False).stdout.strip(),
             "maestro": sh(["maestro", "--version"], check=False).stdout.strip().splitlines()[-1:],
+            "appium": appium_versions(),
             "when": datetime.datetime.now().isoformat(timespec="seconds")}
+
+
+def appium_versions():
+    try:
+        server = sh(["appium", "--version"], check=False).stdout.strip()
+        drivers = sh(["appium", "driver", "list", "--installed", "--json"], check=False).stdout
+        xcuitest = json.loads(drivers).get("xcuitest", {}).get("version")
+    except (FileNotFoundError, ValueError):
+        return None
+    return {"server": server, "xcuitest": xcuitest}
 
 
 def android_environment(serial):
@@ -502,7 +711,7 @@ def main():
     if android:
         kinds = {"androidnav": Androidnav, "adb": Adb, "maestro": lambda d: Maestro(d, android=True)}
     else:
-        kinds = {"simnav": Simnav, "axe": Axe, "maestro": Maestro}
+        kinds = {"simnav": Simnav, "axe": Axe, "maestro": Maestro, "appium": Appium}
     results, extra = {}, {}
     for name in (a.tools or ",".join(kinds)).split(","):
         tool = kinds[name](device)
@@ -519,11 +728,23 @@ def main():
                     runs.append(tool.run(target))
                     print(f"{name} {target} run {i + 1}: {sum(runs[-1]):,.0f}ms", file=sys.stderr)
                 results[name][target] = summarise(runs)
+            except Cannot as e:
+                results[name][target] = summarise([], cannot=str(e))
+                print(f"{name} {target}: cannot: {e}", file=sys.stderr)
             except (StepFailed, subprocess.TimeoutExpired) as e:
                 results[name][target] = {"error": str(e), "runs": runs}
                 print(f"{name} {target}: {e}", file=sys.stderr)
         if name == "maestro":
             extra["maestro_startup_ms"] = statistics.median(tool.startup) if tool.startup else None
+        if name == "appium":
+            extra["appium_server_ms"] = tool.server_ms
+            extra["appium_startup_ms"] = statistics.median(tool.startup) if tool.startup else None
+            extra["appium_context_ms"] = statistics.median(tool.context) if tool.context else None
+            if "plain" in a.targets.split(","):
+                try:
+                    extra["appium_hidden_page"] = tool.hidden_page()
+                except (StepFailed, subprocess.TimeoutExpired) as e:
+                    extra["appium_hidden_page"] = {"error": str(e)}
     os.makedirs(a.out, exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     env = android_environment(device) if android else environment(device)
@@ -533,6 +754,13 @@ def main():
     print(table(results))
     if extra.get("maestro_startup_ms"):
         print(f"\nMaestro start-up per run (not in the table): {extra['maestro_startup_ms']:,.0f}ms")
+    if extra.get("appium_startup_ms"):
+        print(f"Appium session start per run (not in the table): {extra['appium_startup_ms']:,.0f}ms;"
+              f" server start {extra['appium_server_ms']:,.0f}ms once")
+    if extra.get("appium_context_ms"):
+        print(f"Appium switch to the web context (not in the table): {extra['appium_context_ms']:,.0f}ms")
+    if "appium_hidden_page" in extra:
+        print("Appium on Plain web after Web: " + json.dumps(extra["appium_hidden_page"])[:600])
 
 
 if __name__ == "__main__":
