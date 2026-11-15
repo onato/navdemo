@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// Space after a page's last element, half an iPhone 17 Pro screen as the web pages' `50vh`, so any
+/// element can be scrolled to the middle: a tool that centres what it reveals, to keep its tap off
+/// the tab bar, otherwise swipes at the end of the page until it times out.
+let pageEnd: CGFloat = 437
+
 /// A native twin of shared/web/index.html: the same elements, texts, order and accessibility
 /// identifiers (the HTML ids), laid out the same way, so one navigation script runs on both and
 /// a tool's cost on native content can be set against its cost on the same page in a WebView.
@@ -49,6 +54,7 @@ struct NativePageView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
+            .padding(.bottom, pageEnd)
         }
         .task {
             try? await Task.sleep(for: .milliseconds(1500))
@@ -81,6 +87,7 @@ struct NativePage2View: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
+            .padding(.bottom, pageEnd)
         }
         .navigationTitle("Second page")
         .navigationBarTitleDisplayMode(.inline)
