@@ -412,12 +412,14 @@ class Maestro:
             elif what == "wait":
                 lines.append(f'- extendedWaitUntil:\n    visible: "{arg}"\n    timeout: 10000'); sizes.append(1)
             elif what == "type":
-                lines += ['- tapOn:\n    text: "Your name"\n    index: 1', f'- inputText: "{arg}"']; sizes.append(2)
+                # iOS gives the field the label's text too (index 1 is the field); Android only the label.
+                field = '- tapOn:\n    id: "name"' if app == ANDROID_APP else '- tapOn:\n    text: "Your name"\n    index: 1'
+                lines += [field, f'- inputText: "{arg}"']; sizes.append(2)
             elif what == "submit":
                 lines.append("- pressKey: Enter"); sizes.append(1)
             elif what == "reveal":
                 # centerElement: an element under the tab bar counts as visible otherwise, and the tap hits the bar.
-                lines += [f'- scrollUntilVisible:\n    element:\n      text: "{arg}"\n    direction: DOWN\n    centerElement: true',
+                lines += [f'- scrollUntilVisible:\n    element:\n      text: "{arg}"\n    direction: DOWN\n    centerElement: true\n    timeout: 60000',
                           f'- tapOn: "{arg}"']
                 sizes.append(2)
         return "\n".join(lines) + "\n", sizes

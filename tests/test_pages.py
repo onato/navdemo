@@ -19,6 +19,10 @@ class PageEnds(unittest.TestCase):
             body = re.search(r"\bbody\s*\{([^}]*)\}", read("shared", "web", page)).group(1)
             self.assertIn("padding-bottom: 50vh", body, page)
 
+    def test_sending_the_web_form_closes_the_keyboard_so_the_result_is_not_under_it(self):
+        form = re.search(r'<form id="form" onsubmit="([^"]*)"', read("shared", "web", "index.html")).group(1)
+        self.assertIn("document.activeElement.blur()", form)
+
     def test_each_native_page_ends_with_half_a_screen(self):
         swift = read("ios", "NavDemo", "NativePageView.swift")
         self.assertEqual(swift.count(".padding(.bottom, pageEnd)"), 2)

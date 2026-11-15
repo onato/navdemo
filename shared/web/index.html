@@ -23,7 +23,7 @@
 <p id="greeting" aria-live="polite"></p>
 
 <h2>Form</h2>
-<form id="form" onsubmit="event.preventDefault(); document.getElementById('result').textContent='Sent: '+document.getElementById('name').value+', '+document.getElementById('color').value;">
+<form id="form" onsubmit="event.preventDefault(); document.activeElement.blur(); document.getElementById('result').textContent='Sent: '+document.getElementById('name').value+', '+document.getElementById('color').value;">
   <label for="name">Your name</label>
   <input id="name" name="name" type="text" placeholder="Type a name" autocomplete="off">
   <label for="color">Favourite colour</label>

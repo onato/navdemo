@@ -81,6 +81,14 @@ class Android(unittest.TestCase):
         self.assertTrue(compare.Maestro.flow("dev.navdemo.android")[0].startswith("appId: dev.navdemo.android\n"))
         self.assertTrue(compare.Maestro.flow("dev.navdemo.ios")[0].startswith("appId: dev.navdemo.ios\n"))
 
+    def test_maestro_reaches_the_field_by_its_id_on_android_where_only_the_label_has_the_text(self):
+        self.assertIn('- tapOn:\n    id: "name"', compare.Maestro.flow("dev.navdemo.android")[0])
+        self.assertIn('- tapOn:\n    text: "Your name"\n    index: 1', compare.Maestro.flow("dev.navdemo.ios")[0])
+
+    def test_a_reveal_may_take_maestro_a_minute_of_swipes(self):
+        # Its default 20s ran out before row 40 on Android's web page.
+        self.assertEqual(compare.Maestro.flow("dev.navdemo.android")[0].count("    timeout: 60000"), 2)
+
     def test_plain_web_is_not_timed_on_android_and_says_why(self):
         for tool in (compare.Androidnav("emulator-5554"), compare.Adb("emulator-5554")):
             self.assertIn("same WebView", tool.can("plain"))
