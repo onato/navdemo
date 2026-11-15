@@ -22,7 +22,7 @@ tests/smoke.sh android        # the same on an emulator
 $M --platform ios nav tests/tour.ios.nav      # just the tour, on this session's device
 $M --platform ios do tap id=searchField       # any one simnav / androidnav command
 tests/perf.py --platform ios --runs 5         # time the tour: median and p90 per step
-tests/compare.py --udid <udid> --runs 3       # simnav, AXe and Maestro on native, web and plain web
+tests/compare.py --udid <udid> --runs 3       # simnav, AXe, Maestro and Appium on native, web and plain web
 ```
 
 - `.mobile-device/app.toml` names the bundle ids, build commands, app paths, the signed-in /
@@ -47,13 +47,15 @@ tests/compare.py --udid <udid> --runs 3       # simnav, AXe and Maestro on nativ
   `--save-baseline` it writes `tests/perf-baseline.<platform>.json`; later runs mark rows more than
   a fifth and 10 ms slower, and exit 1 when the driver, app or total row is.
 - `tests/compare.py` runs one scenario (read, tap, wait, type and submit, follow a link under the
-  tab bar, tap a row far down the next page) with simnav, AXe and Maestro on the native page, the
-  inspectable Web tab and the Plain web tab. It times each step as an agent pays it: for simnav and
-  AXe the wall time of each command, for Maestro the duration it records per command, with its
-  start-up reported apart. A tool that cannot do a target says so instead of a time (AXe reads no
-  WebView content). Results go to `tests/results/compare-<time>.json`, and a Markdown table is
+  tab bar, tap a row far down the next page) with simnav, AXe, Maestro and Appium on the native
+  page, the inspectable Web tab and the Plain web tab. It times each step as an agent pays it: for
+  simnav and AXe the wall time of each command, for Maestro the duration it records per command,
+  for Appium the wall time of its WebDriver calls; start-ups are reported apart. A tool that cannot
+  do a target says so instead of a time (AXe reads no WebView content, Appium no page that is not
+  inspectable). Each tool's driver is a module in `tests/drivers/`. Results go to `tests/results/compare-<time>.json`, and a Markdown table is
   printed. `tests/compare-baseline.ios.json` is the run to compare against (2026-11-16, iOS 26.5,
   load 6 at the end of the run); compare.py does not read it, so set the two side by side.
-  `--platform android --serial <serial>` runs androidnav, adb and Maestro on the Android app's
+  Appium needs `npm install -g appium` and `appium driver install xcuitest`; its first session
+  builds WebDriverAgent onto the simulator. `--platform android --serial <serial>` runs androidnav, adb and Maestro on the Android app's
   native twin and web page; `tests/compare-baseline.android.json` is its baseline (2026-11-16,
   Android 14 emulator, load 4).
