@@ -18,6 +18,7 @@ tap web "Say hello"
 wait web "Hello from the web"
 tap web type=TextField has="Your name"
 type Ada
+tap Done
 tap web Send
 wait web has=Sent
 tap web "Second page"
