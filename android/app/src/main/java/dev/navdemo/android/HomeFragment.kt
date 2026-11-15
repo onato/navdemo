@@ -23,6 +23,9 @@ class HomeFragment : Fragment() {
                 .setNegativeButton("Cancel") { _, _ -> b.dialogResult.text = "Dialog: Cancel" }
                 .show()
         }
+        b.nativePage.setOnClickListener {
+            parentFragmentManager.beginTransaction().replace(R.id.container, NativePageFragment()).addToBackStack(null).commit()
+        }
         b.items.layoutManager = LinearLayoutManager(requireContext())
         b.items.adapter = ItemsAdapter(Items.all) { title ->
             startActivity(Intent(requireContext(), DetailActivity::class.java).putExtra("title", title))

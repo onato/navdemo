@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A native twin of shared/web/index.html: the same elements, texts, order and ids. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nativeScroll" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:id="@+id/nativeContent" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:id="@+id/title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="NavDemo Web" android:textSize="22sp" android:textStyle="bold" android:accessibilityHeading="true" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp"
+            android:text="This page is served from the app bundle, so the WebView works offline." />
+
+        <TextView style="@style/NativeHeading" android:text="Actions" />
+        <Button android:id="@+id/hello" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="Say hello" />
+        <TextView android:id="@+id/greeting" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:minHeight="20dp" android:textStyle="bold" />
+
+        <TextView style="@style/NativeHeading" android:text="Form" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:labelFor="@+id/name" android:text="Your name" />
+        <EditText android:id="@+id/name" android:layout_width="215dp" android:layout_height="wrap_content"
+            android:hint="Type a name" android:inputType="text" android:imeOptions="actionSend" android:importantForAutofill="no" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:labelFor="@+id/color" android:text="Favourite colour" />
+        <Spinner android:id="@+id/color" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <Button android:id="@+id/send" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:text="Send" />
+        <TextView android:id="@+id/result" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:minHeight="20dp" android:textStyle="bold" />
+
+        <TextView style="@style/NativeHeading" android:text="Navigation" />
+        <Button android:id="@+id/second" style="?attr/borderlessButtonStyle" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Second page" />
+
+        <TextView style="@style/NativeHeading" android:text="Slow content" />
+        <TextView android:id="@+id/late" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="Loading…" android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

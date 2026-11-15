@@ -2,4 +2,12 @@
     <style name="Theme.NavDemo" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#2563EB</item>
     </style>
+    <style name="NativeHeading">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:accessibilityHeading">true</item>
+    </style>
 </resources>
