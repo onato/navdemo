@@ -52,8 +52,8 @@ tests/compare.py --udid <udid> --runs 3       # simnav, AXe and Maestro on nativ
   AXe the wall time of each command, for Maestro the duration it records per command, with its
   start-up reported apart. A tool that cannot do a target says so instead of a time (AXe reads no
   WebView content). Results go to `tests/results/compare-<time>.json`, and a Markdown table is
-  printed. `tests/compare-baseline.ios.json` is the run to compare against (2026-11-15, iOS 26.5,
-  load 18 at the end of the run, from macOS's photo analysis, backup and Spotlight); compare.py does not read it, so set the two side by side.
+  printed. `tests/compare-baseline.ios.json` is the run to compare against (2026-11-16, iOS 26.5,
+  load 6 at the end of the run); compare.py does not read it, so set the two side by side.
   `--platform android --serial <serial>` runs androidnav, adb and Maestro on the Android app's
   native twin and web page; `tests/compare-baseline.android.json` is its baseline (2026-11-16,
   Android 14 emulator, load 4).
