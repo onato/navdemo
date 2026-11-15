@@ -53,4 +53,4 @@ tests/compare.py --udid <udid> --runs 3       # simnav, AXe and Maestro on nativ
   start-up reported apart. A tool that cannot do a target says so instead of a time (AXe reads no
   WebView content). Results go to `tests/results/compare-<time>.json`, and a Markdown table is
   printed. `tests/compare-baseline.ios.json` is the run to compare against (2026-11-15, iOS 26.5,
-  load 15 at the end of the run); compare.py does not read it, so set the two side by side.
+  load 18 at the end of the run, from macOS's photo analysis, backup and Spotlight); compare.py does not read it, so set the two side by side.
