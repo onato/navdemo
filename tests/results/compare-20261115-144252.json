@@ -1,0 +1,143 @@
+{
+ "environment": {
+  "xcode": "Xcode 27.2 Build version 27B52",
+  "runtime": "iOS-26-5",
+  "host": "26.6.2",
+  "load": 27.85595703125,
+  "axe": "v2.0.4",
+  "maestro": [
+   "2.12.1"
+  ],
+  "when": "2026-11-15T14:42:58"
+ },
+ "scenario": [
+  "read",
+  "tap Say hello",
+  "wait Hello from the web",
+  "type Ada",
+  "submit",
+  "wait Sent: Ada, Red",
+  "reveal Second page",
+  "wait Web row 1",
+  "reveal Web row 40"
+ ],
+ "results": {
+  "axe": {
+   "native": {
+    "steps": [
+     381.9998330436647,
+     1150.216249981895,
+     409.04070797841996,
+     2085.1788750151172,
+     866.5907089598477,
+     365.35495799034834,
+     1557.4859170010313,
+     490.47612491995096,
+     7512.831291067414
+    ],
+    "total": 14884.92254121229,
+    "runs": [
+     [
+      700.0405420549214,
+      1222.9030840098858,
+      446.11637492198497,
+      2211.862707976252,
+      866.5907089598477,
+      365.35495799034834,
+      1515.3540420578793,
+      490.47612491995096,
+      7628.112207981758
+     ],
+     [
+      381.9998330436647,
+      1150.216249981895,
+      378.6497500259429,
+      2085.1788750151172,
+      856.7022500792518,
+      340.9497500397265,
+      1557.4859170010313,
+      620.908624958247,
+      7512.831291067414
+     ],
+     [
+      361.2871669465676,
+      1132.4610830051824,
+      409.04070797841996,
+      2043.5690840240568,
+      897.0128330402076,
+      414.51291600242257,
+      1634.6742080058903,
+      436.8442500708625,
+      7054.657874978147
+     ]
+    ]
+   },
+   "web": {
+    "cannot": "reads no webview content (describe-ui shows only the native views)"
+   },
+   "plain": {
+    "cannot": "reads no webview content (describe-ui shows only the native views)"
+   }
+  },
+  "maestro": {
+   "native": {
+    "steps": [
+     467,
+     1685,
+     175,
+     2299,
+     802,
+     175,
+     1696,
+     196,
+     10574
+    ],
+    "total": 18359,
+    "runs": [
+     [
+      467,
+      1652,
+      175,
+      2299,
+      611,
+      171,
+      1696,
+      196,
+      11092
+     ],
+     [
+      426,
+      1872,
+      182,
+      2378,
+      816,
+      184,
+      1780,
+      192,
+      10574
+     ],
+     [
+      532,
+      1685,
+      166,
+      2296,
+      802,
+      175,
+      1669,
+      211,
+      10040
+     ]
+    ]
+   },
+   "web": {
+    "error": "Maestro assertConditionCommand: FAILED {'message': 'Assertion is false: \"Web row 1\" is visible', 'debugMessage': 'Assertion \\'\"Web row 1\" is visible\\' failed. Check the UI hierarchy in debug artifacts to verify the element state and properties.\\n\\nPossible causes:\\n- Element selector may be incorrect - check if there are similar elements with slightly different names/properties.\\n- Element may be temporarily unavailable due to loading state\\n- This could be a real regression that needs to be addressed'}",
+    "runs": []
+   },
+   "plain": {
+    "error": "/Users/swilliams/.claude/skills/simnav/bin/simnav --udid C4E61BAD-979C-43C2-A62A-E969D61FA3F1 launch\u2026: launched dev.navdemo.ios pid 19311, but it was not readable within 20.0s",
+    "runs": []
+   }
+  }
+ },
+ "maestro_startup_ms": 22270.54416696448
+}

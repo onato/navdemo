@@ -22,6 +22,7 @@ tests/smoke.sh android        # the same on an emulator
 $M --platform ios nav tests/tour.ios.nav      # just the tour, on this session's device
 $M --platform ios do tap id=searchField       # any one simnav / androidnav command
 tests/perf.py --platform ios --runs 5         # time the tour: median and p90 per step
+tests/compare.py --udid <udid> --runs 3       # simnav, AXe and Maestro on native, web and plain web
 ```
 
 - `.mobile-device/app.toml` names the bundle ids, build commands, app paths, the signed-in /
@@ -33,6 +34,11 @@ tests/perf.py --platform ios --runs 5         # time the tour: median and p90 pe
   builds and Plain web's never is, so a tool can be compared on one page read both ways, and in an
   app with both kinds of WebView. On Android, WebView debugging is one switch for the whole app,
   so the two tabs are the same.
+- Home → **Native page** (iOS) is a SwiftUI twin of the web page: the same elements, texts, order
+  and identifiers (the HTML ids), and a native second page of 40 rows. One script runs on all three,
+  so a tool's cost on native content can be set against the same page in either WebView. The
+  differences native controls bring: "Second page" is a Button, not a Link, and the colour picker's
+  label includes its value.
 - `tests/tour.*.nav` walk every screen: counter, list → detail, favourite, back, the WebView's
   button, form, link and second page, scrolling, search, profile, dialog. About 10 s per platform.
 - `tests/perf.py` runs the tour several times on a signed-in app, relaunching it before each run,
@@ -40,3 +46,10 @@ tests/perf.py --platform ios --runs 5         # time the tour: median and p90 pe
   driver's own cost), its `app` row the waits (mostly the app's animations and page loads). With
   `--save-baseline` it writes `tests/perf-baseline.<platform>.json`; later runs mark rows more than
   a fifth and 10 ms slower, and exit 1 when the driver, app or total row is.
+- `tests/compare.py` runs one scenario (read, tap, wait, type and submit, follow a link under the
+  tab bar, tap a row far down the next page) with simnav, AXe and Maestro on the native page, the
+  inspectable Web tab and the Plain web tab. It times each step as an agent pays it: for simnav and
+  AXe the wall time of each command, for Maestro the duration it records per command, with its
+  start-up reported apart. A tool that cannot do a target says so instead of a time (AXe reads no
+  WebView content). Results go to `tests/results/compare-<time>.json`, and a Markdown table is
+  printed.

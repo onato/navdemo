@@ -29,6 +29,10 @@ struct HomeView: View {
                     Text(dialogResult).foregroundStyle(.secondary).accessibilityIdentifier("dialogResult")
                 }
             }
+            Section("Pages") {
+                NavigationLink("Native page") { NativePageView().navigationTitle("Native page") }
+                    .accessibilityIdentifier("nativePage")
+            }
             Section("Items") {
                 ForEach(Items.all, id: \.self) { item in
                     NavigationLink(item) { DetailView(title: item) }
