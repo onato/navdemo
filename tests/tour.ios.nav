@@ -29,6 +29,9 @@ scroll up
 scroll up
 tap web "Back to start"
 wait web "Say hello"
+# The Plain tab shows the Web tab's page in a WebView that is not inspectable, while the Web tab's
+# page stays loaded and inspectable behind it. These steps pass only if simnav never reads that
+# hidden page as the one on screen (simnav GOTCHA SN-87).
 tap type=TabButton label="Plain web"
 wait web "Say hello" --timeout 15
 loaded
