@@ -1,6 +1,6 @@
 # Spec: the tool comparison on Android
 
-Status: draft 2026-11-15, awaiting approval.
+Status: approved 2026-11-15.
 
 ## Why
 
